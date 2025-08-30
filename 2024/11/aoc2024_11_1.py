@@ -1,0 +1,58 @@
+"""Advent of Code: 2024.11.1
+    This is the naive solution and it is fast enough.
+"""
+import sys
+
+
+def blink(stone,blinks_left):
+    if blinks_left == 0:
+        return 1
+    
+    if stone == 0:
+        return blink(1,blinks_left-1)
+    
+    stone_str = str(stone)
+    stone_digits = len(stone_str)
+    if stone_digits % 2 == 0:
+        split_at = stone_digits//2
+        return blink(int(stone_str[:split_at]),blinks_left-1) + blink(int(stone_str[split_at:]),blinks_left-1)    
+    
+    return blink(stone*2024,blinks_left-1)
+    
+    
+
+
+def main():
+    """Start"""
+    #get argument
+    if len(sys.argv) < 2:
+        sys.exit("Usage: python " + sys.argv[0] + " filename")
+    filename = sys.argv[1]
+    try:
+        with open(filename, 'rt', encoding="utf-8") as file:
+            lines = file.readlines()
+    except IOError as err:
+        print(f"{err}\nError opening {filename}. Terminating program.", file=sys.stderr)
+        sys.exit(1)
+
+    # Do stuff with lines
+    stones = list(map(int,lines[0].strip().split()))
+    print(sum(blink(stone,25)for stone in stones))
+   
+
+    # The behavior of the stones will always be the same and they are independent from the
+    # beginning and when split. So 0 becomes 1, then 2024 into 20 and 24. These are turned into 
+    # 2, 0, 2, 4 
+    # -> 4048, 1, 4048, 8096 
+    # -> 40 , 48, 2024, 40, 48, 80, 96
+    # -> 4, 0, 4, 8, 20, 24, 4, 0, 4, 8, 8, 0, 9, 6
+
+    # This need some kind of memoizzas.
+    # Can keep record of number and steps. so digit[0] [1,1,1,2,4,4,]
+    # This thing is a tree, and I can go depth-first on the left side. this will populate the
+    # memoization
+
+
+
+if __name__ == "__main__":
+    main()
