@@ -1,9 +1,30 @@
-"""
-    Advent of Code: 2019.1.1
-    
-    Skritt vil være Even eller Odd. Trenger kun nye skritt utover. 
-"""
+"""Advent of Code: 2019.1.1"""
 import sys
+"""
+    The magical numbers used were found with aoc2023_21_2_findSquareValues.py
+
+    These can also be calculated, 
+"""
+def countStepsInSquares(squares):
+    return 7335*((squares+1)//2) + 7320*(squares//2)
+
+def countTop():
+    return 932+5522+935
+
+def countBottom():
+    return 937+5518+931
+
+def countCenter(centerSquares):
+    return 5506+5534+countStepsInSquares(centerSquares)
+
+def countFromCenter(squares,west,east):
+    total = 0
+    while(squares > 0):
+        total += west+east+countStepsInSquares(squares)
+        squares -= 2
+    return total
+
+
 
 def main():
     """Start"""
@@ -18,29 +39,10 @@ def main():
         print(f"{err}\nError opening {filename}. Terminating program.", file=sys.stderr)
         sys.exit(1)
 
-    # Do stuff with lines
-    rocks = set()
-    start = None
-
-    for i,line in enumerate(lines):
-        for j,c in enumerate (line.strip()):
-            if c == 'S':
-                start = (i,j)
-            elif c == '#':
-                rocks.add( (i,j) )
-
-    steps = set()
-    steps.add(start)
-    for _ in range(64):
-        next_steps = set()
-
-        for s in steps:
-            for ns in [(s[0]-1,s[1]),(s[0],s[1]+1),(s[0]+1,s[1]),(s[0],s[1]-1)]:
-                if ns not in rocks:
-                    next_steps.add(ns)
-        steps = next_steps
-
-    print(len(steps))
+    steps = 26501365
+    centerSquares = ((steps-65) * 2)//131 - 2 + 1
+    totalSteps = countTop() + countBottom() + countCenter(centerSquares)+countFromCenter(centerSquares-2,932+6415,935+6427)+countFromCenter(centerSquares-2,937+6411,931+6427)
+    print(totalSteps)
 
 
 if __name__ == "__main__":
