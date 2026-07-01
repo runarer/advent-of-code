@@ -1,38 +1,75 @@
-"""Advent of Code: 2023.25.1"""
+"""Advent of Code: 2023.25.1
+
+Stoer-Wagner (Steg-for-steg)
+
+Hver runde i algoritmen kalles en fase, og hver fase gjør følgende:
+    
+    Start med en tilfeldig node: 
+        Du oppretter en mengde med noder som starter med denne ene noden.
+   
+    Legg til den "nærmeste" noden: 
+        Finn den noden utenfor mengden som har sterkest tilknytning 
+        (høyest samlet kantvekt) til nodene som allerede er i mengden. Legg 
+        den til. 
+    
+    Gjenta til alle noder er valgt: 
+        Fortsett med dette til alle nodene i grafen er lagt til i mengden.
+    
+    Finn de to siste nodene: 
+        De to siste nodene som ble lagt til i mengden kalles ofte s og t.
+    
+    Registrer kuttet: 
+        Det minste kuttet mellom akkurat disse to nodene (s-t kuttet) er rett 
+        og sways lik summen av kantene som går inn til den aller siste noden (t). 
+        Lagre denne verdien.
+    
+    Slå sammen nodene: 
+        Slå nodene s og t sammen til én enkelt node (kontraksjon). Alle kanter som 
+        gikk til s eller t går nå til den nye super-noden.  
+    
+Dette gjentas i en ny fase på den nye, mindre grafen. Når du har kjørt nok faser til 
+at det bare er én node igjen, ser du på alle de lagrede verdiene fra steg 5. Den 
+laveste verdien er grafens minimumskutt. 
+
+Siden vi vet at kuttet skal være 3 kan vi stoppe algoritmen når vi finner et kutt med 3 kanter.
+
+"""
 import sys
 
-def MaximumAdjecencySearh(vertexes,edges):
-    start = vertexes[0]
-    foundSet = [start]
-    cutWeight = []
-    canditates = set(vertexes)
-    canditates.remove(start)
+def StoerWagner(graph):
+    while len(graph)> 1:
+    # lag en hashtable med kant veridene
+        edgeWeight = {}
+        for node in graph:
+            edgeWeight[node] = 0
 
-    while(canditates):
-        maxNextVertex = 0
-        maxWeight = -10_000_000
-        for next in canditates:
-            print(next,len(canditates))
-            weightSum = 0
-            for s in foundSet:
-                edge = 1 if s in edges[next] else 0
-                if edge != 0:
-                    weightSum += edge
+        # Start med en "tilfeldig node", tar første
+        nodeToAdd = next(iter(graph))
+                
+        while len(edgeWeight) > 2:
+            # newGraph.append(nodeToAdd)
+            del edgeWeight[nodeToAdd]
 
-            if weightSum > maxWeight:
-                maxNextVertex = next
-                maxWeight = weightSum
-        
-        canditates.remove(maxNextVertex)
-        foundSet.append(maxNextVertex)
-        cutWeight.append(maxWeight)
+            for edge in graph[nodeToAdd]:
+                # hvis edge ikke finnes så er den behandlet
+                if edge in edgeWeight:
+                    edgeWeight[edge] += 1
 
-    n = len(foundSet)
-    return (foundSet[n-2],foundSet[n-1],cutWeight[-1])
+            # Finn neste 
+            maxEdges = 0
+            for edge in edgeWeight:
+                if edgeWeight[edge] > maxEdges:
+                    maxEdges = edgeWeight[edge]
+                    nodeToAdd = edge
 
+            # Har vi en løsning? Hvis summen av kantene er 3, så har vi funnet et kutt
+            # Dette forenkler algoritmen.
+            sumEdges = sum(edgeWeight.values()) 
+            if sumEdges == 3:  
+                return len(edgeWeight)
 
+    return 0
 
-    pass
 
 def main():
     """Start"""
@@ -64,15 +101,13 @@ def main():
                 wires[c] = [endpoint]
             else:
                 wires[c].append(endpoint)
-
-    # with open("wires.txt", "w") as f:
-    #     for wire,connected in wires.items():
-    #         f.write(f"{wire}:{connected}\n")
     
-    (a,b,c) = MaximumAdjecencySearh(list(wires.keys()),wires)
-    print(a,b,c)
-        
+    # Finn partisjonene
+    originalSize = len(wires)
+    partisionOneSize = StoerWagner(wires)
+    partisionTwoSize = originalSize - partisionOneSize
 
+    print("Answer is:", partisionOneSize*partisionTwoSize)
 
 
 if __name__ == "__main__":
