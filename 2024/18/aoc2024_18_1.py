@@ -1,6 +1,32 @@
 """Advent of Code: 2024.10.1"""
 import sys
 
+target_x = 71
+target_y = 71
+part1_bytes = 1024
+
+
+def findSteps(memory, start, target):
+    """Find steps from start to target in memory"""
+    from collections import deque
+
+    queue = deque([(start, 0)])  # (position, steps)
+    visited = set([start])
+
+    while queue:
+        (x, y), steps = queue.popleft()
+
+        if (x, y) == target:
+            return steps
+
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < target_x and 0 <= ny < target_y and memory[ny][nx] == '.' and (nx, ny) not in visited:
+                visited.add((nx, ny))
+                queue.append(((nx, ny), steps + 1))
+
+    return -1  # Target not reachable
+
 def main():
     """Start"""
     #get argument
@@ -16,13 +42,19 @@ def main():
 
     # Do stuff with lines
     droped_bytes = [ tuple(map(int,line.strip().split(','))) for line in lines ]
-    target_x = 7
-    target_y = 7
+    
     # memory = [ [ '#' if (x,y) in droped_bytes else '.' for x in range(memory_width)] for y in range(memory_height) ]
-    memory = [ [ '#' if (x,y) in droped_bytes[:12] else '.' for x in range(target_x)] for y in range(target_y) ]
+    memory = [ [ '#' if (x,y) in droped_bytes[:part1_bytes] else '.' for x in range(target_x)] for y in range(target_y) ]
 
-    for line in memory:
-        print("".join(line))
+    target = (70,70)
+    start = (0,0)
+
+    steps = findSteps(memory, start, target)
+    print(f"Part 1: {steps}")
+
+
+    # for line in memory:
+    #     print("".join(line))
     
     
 if __name__ == "__main__":
