@@ -4,16 +4,17 @@ import sys,re
 wide = 101
 tall = 103
 
-def run(position,seconds):
-    x,y,vx,vy = position
+# Må endre til oppdatere en liste med posisjoner.
+def step(robots,grid):
+    for robot in robots:
+        grid[robot[1]][robot[0]] = ' '
 
-    for i in range(1,seconds+1):
-        x += vx
-        x %= wide
-        y += vy
-        y %= tall
+        robot[0] += robot[2]
+        robot[0] %= wide
+        robot[1] += robot[3]
+        robot[1] %= tall
 
-    return (x,y,vx,vy)
+        grid[robot[1]][robot[0]] = 'X'
 
 
 def main():
@@ -31,27 +32,36 @@ def main():
 
     # Do stuff with lines
     robots = [list(map(int,re.findall(r"p=(\d+),(\d+) v=(-?\d+),(-?\d+)",line)[0])) for line in lines]
-    # robot_positions = [ run(robot,100) for robot in robots]
+    grid = [[' ' for _ in range(wide)] for _ in range(tall)]
 
-    blinks = 0
-    while True:
-        robots = [ run(robot,1) for robot in robots]
-        blinks += 1
-        robot_positions = [ (x,y) for x,y,_,_ in robots]
-        center_robots = [(x,y) for x,y in robot_positions if x == wide//2]
-        for x,y in center_robots:
-            if (x-1,y+1) in robot_positions and (x+1,y+1) in robot_positions and (x,y+1) in robot_positions:
-                for y in range(tall):
-                    for x in range(wide):
-                        print( 'X' if (x,y) in robot_positions else ' ',end="")
-                    print()
-                print("o"*wide,blinks)
-                input()
+    steps = 0
+    run = True
+    while run:
+        step(robots,grid)
+        steps += 1
 
+        # check all robots for neighbors, if we have clustered robots
+        # print grid, steps and ask for input to continue
+        score = 0
 
+        for robot in robots:
+            x,y = robot[0],robot[1]
+            for dx in [-1,0,1]:
+                for dy in [-1,0,1]:
+                    if dx == 0 and dy == 0:
+                        continue
+                    nx,ny = (x+dx)%wide,(y+dy)%tall
+                    if grid[ny][nx] == 'X':
+                        score += 1
 
-    
-
+        # this was enough to get right answer.
+        if score > 1000:
+            print("Score:",score,"Steps:",steps)
+            for y in range(tall):
+                for x in range(wide):
+                    print(grid[y][x],end="")
+                print()
+            input()
 
 if __name__ == "__main__":
     main()
