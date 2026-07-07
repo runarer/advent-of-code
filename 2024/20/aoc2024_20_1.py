@@ -58,13 +58,50 @@ def main():
                     next = (n_row, n_col)
                     break
 
+    cheats = {}
+
+    max_steps = steps_to_end[start[0]][start[1]]
+
+    # For all cells not a wall (-1), we will check a radius of 2 cells in each direction to 
+    # see if we can find a shorter path to the end.
+    for row in range(len(map)):
+        for col in range(len(map[row])):
+            if steps_to_end[row][col] == -1:
+                continue
+            current_steps = steps_to_end[row][col]
+            
+            # one wall cheats
+            for d_row, d_col in [(-1,0),(1,0),(0,-1),(0,1)]:
+                n_row, n_col = row + d_row, col + d_col
+                
+                if 0 <= n_row < len(map) and 0 <= n_col < len(map[0]): 
+                    # if steps_to_end[n_row][n_col] != -1:
+                    #     continue
+
+                    # find target cell and make sure it exists
+                    t_row, t_col = n_row + d_row, n_col + d_col
+                    if 0 <= t_row < len(map) and 0 <= t_col < len(map[0]) and steps_to_end[t_row][t_col] != -1:
+                        if steps_to_end[t_row][t_col] < current_steps:
+                            steps_saved = steps_to_end[row][col] - 2 - steps_to_end[t_row][t_col]
+                            
+                            if steps_saved not in cheats:
+                                cheats[steps_saved] = []
+                            
+                            cheats[steps_saved].append((row, col, t_row, t_col))
+
+
+    # for steps_saved in sorted(cheats.keys()):
+    #     print(f"There are {len(cheats[steps_saved])} cheats that save {steps_saved} picoseconds.")
+
+
     # for row in map:
     #     print(''.join(row))
 
     # for row in steps_to_end:
     #     print(' '.join(f"{cell:3}" for cell in row))
 
-    # print(f"Start: {start}, End: {end}")
+    sum_cheats = sum( len(cheats[s]) for s in cheats.keys() if s >= 100 )
+    print(f"Part 1: {sum_cheats}")
 
 if __name__ == "__main__":
     main()
