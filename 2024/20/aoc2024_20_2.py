@@ -1,9 +1,4 @@
-"""Advent of Code: 2024.20.2
-
-    One thing that's unclear, does the cheat end when reaching the track of 
-    can I move across the track and into another wall aslong as I got time left
-    to do so?
-"""
+"""Advent of Code: 2024.20.2"""
 import sys
 
 # 
@@ -78,6 +73,7 @@ def main():
                     next = (n_row, n_col)
                     break
 
+    # Part 2 solution, can solve part 1 by setting max_steps to 2
     max_steps = 20
     search_grid = generate_search_grid(max_steps)
 
@@ -91,6 +87,8 @@ def main():
 
         current_steps = steps_to_end[row][col]
 
+        # we look through the search grid and each non wall that's closer to the end
+        # is considered a cheat.
         for steps,(d_row, d_col) in search_grid:
             n_row, n_col = row + d_row, col + d_col
             if 0 <= n_row < rows and 0 <= n_col < cols:
@@ -98,86 +96,16 @@ def main():
                     steps_saved = steps_to_end[row][col] - steps - steps_to_end[n_row][n_col]
                             
                     if steps_saved not in cheats:
-                        # making this a set did not help, make it a list when solved.
-                        cheats[steps_saved] = set()
+                        cheats[steps_saved] = []
                     
-                    cheats[steps_saved].add((row, col, n_row, n_col))
+                    cheats[steps_saved].append((row, col, n_row, n_col))
 
-
-
-        # from collections import deque
-        
-        
-        # queue = deque([(start,0)])  # (position, steps)
-        # visited = set([start])
-
-        # while queue:
-        #     (c_row, c_col), steps = queue.popleft()
-
-        #     if steps_to_end[c_row][c_col] == 0:
-        #         steps_saved = steps_to_end[row][col] - steps # -1 since steps already counted the one landed on.
-                            
-        #         if steps_saved not in cheats:
-        #             # making this a set did not help, make it a list when solved.
-        #             cheats[steps_saved] = set()
-                
-        #         cheats[steps_saved].add((row, col, c_row, c_col))
-
-        #     for d_row, d_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-        #         n_row, n_col = c_row + d_row, c_col + d_col
-        #         if 0 <= n_row < rows and 0 <= n_col < cols and (n_row, n_col) not in visited and steps <= max_steps:
-        #             visited.add((n_row, n_col))
-        #             if steps_to_end[n_row][n_col] == -1:
-        #                 # We can travel some more
-        #                 queue.append(((n_row, n_col), steps + 1))
-        #             else:
-        #                 # We have a new cheat
-        #                 if steps_to_end[n_row][n_col] < current_steps: # does not seem to mather if steps are added
-        #                     steps_saved = steps_to_end[row][col] - steps - steps_to_end[n_row][n_col] - 1 # -1 since steps already counted the one landed on.
-                            
-        #                     if steps_saved not in cheats:
-        #                         # making this a set did not help, make it a list when solved.
-        #                         cheats[steps_saved] = set()
-                            
-        #                     cheats[steps_saved].add((row, col, n_row, n_col))
-
-        #                     if steps < max_steps:
-        #                         queue.append(((n_row, n_col), steps + 1))
-
-
-
-
-
-
-
-        # # one wall cheats
-        # for d_row, d_col in [(-2,0),(2,0),(0,-2),(0,2)]:
-        #     t_row, t_col = row + d_row, col + d_col
-
-        #     if 0 <= t_row < len(map) and 0 <= t_col < len(map[0]) and steps_to_end[t_row][t_col] != -1:
-        #         if steps_to_end[t_row][t_col] < current_steps:
-        #             steps_saved = steps_to_end[row][col] - 2 - steps_to_end[t_row][t_col]
-                    
-        #             if steps_saved not in cheats:
-        #                 cheats[steps_saved] = []
-                    
-        #             cheats[steps_saved].append((row, col, t_row, t_col))
-
-
-    for steps_saved in sorted(cheats.keys()):
-        print(f"There are {len(cheats[steps_saved])} cheats that save {steps_saved} picoseconds.")
-
-
-    # for row in map:
-    #     print(''.join(row))
-
-    # for row in steps_to_end:
-    #     print(' '.join(f"{cell:3}" for cell in row))
+    # for steps_saved in sorted(cheats.keys()):
+    #     print(f"There are {len(cheats[steps_saved])} cheats that save {steps_saved} picoseconds.")
 
     sum_cheats = sum( len(cheats[s]) for s in cheats.keys() if s >= 100 )
-    print(f"Part 1: {sum_cheats}")
+    print(f"Part 2: {sum_cheats}")
 
-    # print(search_grid)
 
 if __name__ == "__main__":
     main()
