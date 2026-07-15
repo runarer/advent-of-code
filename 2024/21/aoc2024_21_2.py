@@ -63,19 +63,6 @@ def moves(token:str,robots:int) -> int:
 
     return total_moves
 
-
-def calculate_moves(lookup,seqence,position='A'):
-
-    new_sequence = []
-
-    for token in seqence:
-        new_sequence += lookup[position][token]
-        position = token
-
-    return new_sequence
-
-
-
 def main():
     """Start"""
     #get argument
@@ -95,13 +82,11 @@ def main():
     for line in lines:
         line = line.strip()
 
-        start = 'A'
+        position = 'A'
         line_parts = list(line)
         line_size = 0
         for line_part in line_parts:
-            next_sequence = calculate_moves(key_lookup,line_part,start)
-         
-            print(next_sequence)
+            next_sequence = key_lookup[position][line_part]
 
             first = moves(next_sequence[0],nr_robots)
             second = first + 1
@@ -109,7 +94,7 @@ def main():
             if len(next_sequence) > 1:
                 second = moves(next_sequence[1],nr_robots)
             line_size += min(first,second)
-            start = line_part
+            position = line_part
 
         part2 += line_size*int(line[:-1])
 
