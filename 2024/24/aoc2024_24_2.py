@@ -2,10 +2,13 @@
 import sys, re
 
 class Gate:
+    input1Org:str
+
     def __init__(self,type:str,input1:str,input2:str,output:str) -> None:
         self.input1Org = input1
         self.input2Org = input2
         self.outputOrg = output
+        self.type = type 
         if type == "AND":
             self.func = lambda a,b: a and b
         elif type == "XOR":
@@ -125,14 +128,14 @@ def main():
     xint = int(x,2)
     yint = int(y,2)
 
-    xint = 512
-    yint = 1
+    # xint = 512
+    # yint = 1
 
     expected = xint + yint
 
     set_numbers(xint,yint,listx,listy)
 
-    print(format(expected,'046b'))
+    # print(f"{format(expected,'046b')} - {expected}")
 
     gates = create_gates(listx,listy,listz,gates_tup)
 
@@ -143,12 +146,65 @@ def main():
             output[ int(s[1:]) ] = gate
 
     s = ['1' if v.get_value() else '0' for v in output if v != None]
-    # s.reverse()
-    print("".join(reversed(s)))
-    print(int("".join(reversed(s)),2))
+    
+    # print(f"{''.join(reversed(s))} - {int(''.join(reversed(s)),2)}")
+    
+    for i,x in enumerate(reversed(format(expected,'046b'))):
+        if x != s[i]:
+            print(f"Mismatch at {i}: expected {x} but got {s[i]}")        
+
+        # print("z09")
+        # prev_gates = [gates["z09"].input1Org,gates["z09"].input2Org]
+        # print(prev_gates)
+        # for pg in prev_gates:
+        #     for gate_name,gate in gates.items():
+        #         if gate.input1Org == pg or gate.input2Org == pg:
+        #             print(f"{gate_name}")
+
+    expected_bits = "".join(reversed(format(expected,'046b')))
+    accual_bits = ''.join(s)
+
+    print(expected_bits)
+    print(accual_bits)
+
+    assumed_correct = set()
+    potential_wrong = set()
+    for gatenr in range(len(listz)):
+
+        curr_level = ["z0" + str(gatenr) if gatenr < 10 else "z" + str(gatenr)]
+        new_level = []
+        while True:
+            new_level = []
+            for l in curr_level:
+                if l.startswith('x') or l.startswith('y'):
+                    continue
+                new_level.append(gates[l].input1Org)
+                new_level.append(gates[l].input2Org)
+
+                if expected_bits[gatenr] == accual_bits[gatenr]:
+                    if l not in potential_wrong:
+                        assumed_correct.add(l)
+                else:
+                    if l not in assumed_correct:
+                        potential_wrong.add(l)
+
+            if not new_level:
+                break
+            curr_level = new_level
+    # print(f"Assumed correct: {assumed_correct}")
+    # print(f"Potential wrong: {potential_wrong}")
+    pw = list(potential_wrong)
+    pw.sort()
+
+    from itertools import permutations
+    perm_iterator = permutations(pw, 8)
 
 
-    # print(gates)
+    for perm in perm_iterator:
+        print(perm)
+
+    
+    # print(len(gates))
 
 
 
