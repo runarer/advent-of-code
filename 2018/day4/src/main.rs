@@ -38,6 +38,9 @@ fn main() -> io::Result<()> {
     let most_asleep_minute = find_minute_most_asleeped(sleepiest_guard);
     println!("Part 1: {}", sleepiest_guard.id * most_asleep_minute);
 
+    let max_minute_sleeper_time_id = find_guard_with_higest_sleep_minute(guards);
+    println!("Part 2: {}", max_minute_sleeper_time_id);
+
     Ok(())
 }
 
@@ -160,4 +163,27 @@ fn find_minute_most_asleeped(guard: &Guard) -> usize {
         .max_by_key(|(_, count)| *count)
         .map(|(minute, _)| minute)
         .unwrap_or(0)
+}
+
+fn find_guard_with_higest_sleep_minute(guards: Vec<Guard>) -> usize {
+    let mut max_guard_id = 0;
+    let mut max_count = 0;
+    let mut max_minute = 0;
+
+    for guard in guards {
+        let (minute, count) = guard
+            .sleep_minutes
+            .iter()
+            .enumerate()
+            .max_by_key(|(_, count)| *count)
+            .unwrap();
+
+        if count > &max_count {
+            max_count = *count;
+            max_minute = minute;
+            max_guard_id = guard.id;
+        }
+    }
+
+    max_guard_id * max_minute
 }
