@@ -61,12 +61,13 @@ fn main() -> io::Result<()> {
 
 fn print_log(log: Vec<Event>) {
     for event in log {
-        print!(
-            "{}-{:02}-{:02} {:02}:{:02}",
-            event.year, event.month, event.day, event.hour, event.minute
-        );
         println!(
-            " {}",
+            "{}-{:02}-{:02} {:02}:{:02} {}",
+            event.year,
+            event.month,
+            event.day,
+            event.hour,
+            event.minute,
             match event.event_kind {
                 EventKind::BeginShift(id) => format!("Guard #{} begins shift", id),
                 EventKind::FallAsleep => "falls asleep".to_string(),
