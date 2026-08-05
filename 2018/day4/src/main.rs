@@ -15,10 +15,14 @@ struct Event {
     event_kind: EventKind,
 }
 
+struct Guard {
+    id: usize,
+    total_sleep: usize,
+    sleep_minutes: [usize; 60],
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
-
-    let re = Regex::new(r"\[(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)\] ((?:Guard #(\d+) begins shift)|(?:falls asleep)|(?:wakes up))").unwrap();
 
     if args.len() < 2 {
         eprintln!("Usage: {} <input_file>", args[0]);
@@ -27,7 +31,20 @@ fn main() -> io::Result<()> {
 
     let content = std::fs::read_to_string(&args[1])?;
 
-    let log = content
+    let log = parse_log_content(content);
+
+    let guards = calculate_guard_sleep(&log);
+    let sleepiest_guard = find_sleepiest_guard(&guards).unwrap();
+    let most_asleep_minute = find_minute_most_asleeped(sleepiest_guard);
+    println!("Part 1: {}", sleepiest_guard.id * most_asleep_minute);
+
+    Ok(())
+}
+
+fn parse_log_content(content: String) -> Vec<Event> {
+    let re = Regex::new(r"\[(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)\] ((?:Guard #(\d+) begins shift)|(?:falls asleep)|(?:wakes up))").unwrap();
+
+    let mut log = content
         .lines()
         .map(|line| {
             let capture = re.captures(line).unwrap();
@@ -54,25 +71,93 @@ fn main() -> io::Result<()> {
         })
         .collect::<Vec<Event>>();
 
-    print_log(log);
-
-    Ok(())
+    sort_log(&mut log);
+    log
 }
 
-fn print_log(log: Vec<Event>) {
+// fn print_log(log: &Vec<Event>) {
+//     for event in log {
+//         println!(
+//             "{}-{:02}-{:02} {:02}:{:02} {}",
+//             event.year,
+//             event.month,
+//             event.day,
+//             event.hour,
+//             event.minute,
+//             match event.event_kind {
+//                 EventKind::BeginShift(id) => format!("Guard #{} begins shift", id),
+//                 EventKind::FallAsleep => "falls asleep".to_string(),
+//                 EventKind::WakeUp => "wakes up".to_string(),
+//             }
+//         );
+//     }
+// }
+
+// fn print_guards(guards: &Vec<Guard>) {
+//     for guard in guards {
+//         println!(
+//             "Guard #{}: total sleep {} minutes\n\tsleep minutes: {:?}",
+//             guard.id, guard.total_sleep, guard.sleep_minutes
+//         );
+//     }
+// }
+
+fn sort_log(log: &mut Vec<Event>) {
+    log.sort_by(|a, b| {
+        (a.year, a.month, a.day, a.hour, a.minute).cmp(&(b.year, b.month, b.day, b.hour, b.minute))
+    });
+}
+
+fn calculate_guard_sleep(log: &Vec<Event>) -> Vec<Guard> {
+    let mut guards: Vec<Guard> = Vec::new();
+    let mut current_guard: Option<&mut Guard> = None;
+    let mut guard_fell_asleep_at = 0;
+
     for event in log {
-        println!(
-            "{}-{:02}-{:02} {:02}:{:02} {}",
-            event.year,
-            event.month,
-            event.day,
-            event.hour,
-            event.minute,
-            match event.event_kind {
-                EventKind::BeginShift(id) => format!("Guard #{} begins shift", id),
-                EventKind::FallAsleep => "falls asleep".to_string(),
-                EventKind::WakeUp => "wakes up".to_string(),
+        match event.event_kind {
+            EventKind::BeginShift(id) => {
+                if let Some(guard) = guards.iter_mut().find(|g| g.id == id) {
+                    current_guard = Some(guard);
+                } else {
+                    guards.push(Guard {
+                        id,
+                        total_sleep: 0,
+                        sleep_minutes: [0; 60],
+                    });
+                    current_guard = guards.last_mut();
+                }
             }
-        );
+            EventKind::FallAsleep => {
+                guard_fell_asleep_at = event.minute;
+            }
+            EventKind::WakeUp => {
+                if let Some(guard) = current_guard.as_mut() {
+                    for minute in guard_fell_asleep_at..event.minute {
+                        guard.sleep_minutes[minute] += 1;
+                    }
+                    let duration = event.minute - guard_fell_asleep_at;
+                    guard.total_sleep += duration;
+                }
+            }
+        }
     }
+
+    guards
+}
+
+fn find_sleepiest_guard(guards: &Vec<Guard>) -> Option<&Guard> {
+    guards.iter().max_by_key(|g| g.total_sleep)
+}
+
+// iter og enumerate lager par med veriden og minuttet(index)
+// så finner vi maks minutter
+// deretter hentes ut minuttet
+fn find_minute_most_asleeped(guard: &Guard) -> usize {
+    guard
+        .sleep_minutes
+        .iter()
+        .enumerate()
+        .max_by_key(|(_, count)| *count)
+        .map(|(minute, _)| minute)
+        .unwrap_or(0)
 }
