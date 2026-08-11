@@ -17,18 +17,26 @@ fn main() -> io::Result<()> {
         .map(|line| parse_coordinates(line.trim()))
         .collect();
 
-    println!("lenght points: {}", points.len());
+    // println!("lenght points: {}", points.len());
 
     let locked_points: Vec<(i32, i32)> = points
         .iter()
         .filter(|point| locked(point, &points))
         .map(|point| *point)
         .collect();
-    println!("lenght locked points: {}", locked_points.len());
+    // println!("lenght locked points: {}", locked_points.len());
 
-    for point in locked_points {
-        println!("({},{})", point.0, point.1)
-    }
+    // for point in &locked_points {
+    //     println!("({},{})", point.0, point.1)
+    // }
+
+    let largest_area = locked_points
+        .iter()
+        .map(|point| calcualte_area(point, &points))
+        .max()
+        .expect("No largest area was found");
+
+    println!("Part 1: {}", largest_area);
 
     Ok(())
 }
@@ -88,14 +96,18 @@ fn locked(point: &(i32, i32), points: &Vec<(i32, i32)>) -> bool {
     false
 }
 
-fn calcualte_area(point: (i32, i32), points: &Vec<(i32, i32)>) -> usize {
+fn calcualte_area(point: &(i32, i32), points: &Vec<(i32, i32)>) -> usize {
     let mut queue: VecDeque<(i32, i32)> = VecDeque::new();
     let mut visited: Vec<(i32, i32)> = Vec::new();
 
-    queue.push_back(point);
+    queue.push_back(*point);
 
     while queue.len() > 0 {
         let current_point = queue.pop_front().expect("Queue was empty after check!");
+        println!(
+            "{},{} - {},{}",
+            point.0, point.1, current_point.0, current_point.1
+        );
         visited.push(current_point);
         let neighbors = get_neighbors(current_point);
 
@@ -103,11 +115,30 @@ fn calcualte_area(point: (i32, i32), points: &Vec<(i32, i32)>) -> usize {
             if visited.contains(&neighbor) || queue.contains(&neighbor) {
                 continue;
             }
-            queue.push_back(neighbor);
+            // This need to be the shortest
+            let dist_from_point = distance(neighbor, *point);
+            let mut tie_or_higher = false;
+            // check the other points
+            for other_points in points {
+                // Skip point
+                if *other_points == *point {
+                    continue;
+                }
+                let dist_other_point = distance(neighbor, *other_points);
+
+                if dist_other_point <= dist_from_point {
+                    tie_or_higher = true;
+                    break;
+                }
+            }
+
+            if !tie_or_higher {
+                queue.push_back(neighbor);
+            }
         }
     }
 
-    0
+    visited.len()
 }
 
 fn get_neighbors((x, y): (i32, i32)) -> [(i32, i32); 4] {
