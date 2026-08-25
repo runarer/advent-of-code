@@ -1,6 +1,24 @@
 use std::collections::VecDeque;
 use std::io;
 
+/*
+    Der avstanden mellom to punkter er lik så får man to eller tre linjer.
+    Disse linjene vil skape et "bilde" delt opp i deler. Den største ikke evige
+    delen er det vi er ute etter.
+
+    Må beregne og representer disse linjene, noen vil være evige i en retning.
+    Krysspunkter deler opp i nye linjer.
+
+    Tenk to punkter der x1 != x2, y1 != y2 og punktene er ikke 45 grader ovenfor
+    hverandre. Dette gir tre linjer.
+     - En linje mellom to "nye" punkter
+     - En linje fra hvert nytt punkt og ut i evigheten fra dette punktet.
+
+    Spesielle tilfeller, skjekk om disse eksistere så vi kan unngå å håndtere dem
+    hvis ikke.
+     - Hvis x1 == x2 eller x1 == y2 så får vi en linje, evig i begge retninger.
+     - 45 grader ovenfor hverandre vil gi 5 linjer og 2 områder hvor avstanden er lik.
+*/
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
 
@@ -24,11 +42,11 @@ fn main() -> io::Result<()> {
         .filter(|point| locked(point, &points))
         .map(|point| *point)
         .collect();
-    // println!("lenght locked points: {}", locked_points.len());
+    println!("lenght locked points: {}", locked_points.len());
 
-    // for point in &locked_points {
-    //     println!("({},{})", point.0, point.1)
-    // }
+    for point in &locked_points {
+        println!("({},{})", point.0, point.1)
+    }
 
     let largest_area = locked_points
         .iter()
@@ -104,10 +122,10 @@ fn calcualte_area(point: &(i32, i32), points: &Vec<(i32, i32)>) -> usize {
 
     while queue.len() > 0 {
         let current_point = queue.pop_front().expect("Queue was empty after check!");
-        println!(
-            "{},{} - {},{}",
-            point.0, point.1, current_point.0, current_point.1
-        );
+        // println!(
+        //     "{},{} - {},{}",
+        //     point.0, point.1, current_point.0, current_point.1
+        // );
         visited.push(current_point);
         let neighbors = get_neighbors(current_point);
 
