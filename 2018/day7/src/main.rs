@@ -66,7 +66,6 @@ fn find_order(in_graph: &HashMap<char, Vec<char>>) -> String {
     while graph.len() > 0 {
         // find first (sorted)
         let mut empty_lists = find_empty(&graph);
-        println!("{:?}", empty_lists);
         empty_lists.sort();
         let last_added = empty_lists[0];
 
@@ -77,8 +76,8 @@ fn find_order(in_graph: &HashMap<char, Vec<char>>) -> String {
         graph.remove(&last_added);
 
         for (_, dependensies) in graph.iter_mut() {
-            if dependensies.contains(&last_added) {
-                dependensies.retain(|&n| n != last_added);
+            if let Some(index) = dependensies.iter().position(|&x| x == last_added) {
+                dependensies.swap_remove(index);
             }
         }
     }
@@ -97,3 +96,28 @@ fn find_empty(graph: &HashMap<char, Vec<char>>) -> Vec<char> {
 
     empty_lists
 }
+
+/*
+    For del 2 trenger vi en loop for work som ticker pr sec. Vi må ha en oversikt over arbeidere.
+    Kan være en array på 5 med antall sekunder igjen for arbeidet og label for node.
+
+    loop pr sec:
+        Hent alle tomme lister.
+            Hvis null
+                continue
+            else
+                Sorter liste over noder
+                For hver node:
+                    Ledig arbeider?
+                        assign
+                        remove node from graph
+        reduser alle ikke 0 arbeidre
+        hvis arbeider har node og er null:
+            fjern node fra dependensies.
+
+
+
+
+
+
+*/
