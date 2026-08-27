@@ -22,10 +22,15 @@ fn main() -> io::Result<()> {
         .map(|c| c.parse::<usize>().expect("Not a valid number"))
         .collect();
 
-    // println!("{:?}", input);
     let (root, _) = create_node(&input, 0);
 
-    println!("{:?}", root.metadata);
+    let metadata_sum = sum_metadata(&root);
+
+    println!("Part 1: {}", metadata_sum);
+
+    let sum_values = sum_value_of_node(&root);
+
+    println!("Part 2: {}", sum_values);
 
     Ok(())
 }
@@ -33,7 +38,6 @@ fn main() -> io::Result<()> {
 fn create_node(numbers: &Vec<usize>, start: usize) -> (Node, usize) {
     let node_fields = numbers[start];
     let metadata_fields = numbers[start + 1];
-    println!("{},{},{}", start, node_fields, metadata_fields);
 
     let mut node = Node {
         nodes: Vec::with_capacity(node_fields),
@@ -46,7 +50,6 @@ fn create_node(numbers: &Vec<usize>, start: usize) -> (Node, usize) {
         for _ in 0..node_fields {
             let (subnode, end) = create_node(numbers, offset);
             offset = end;
-            // node.nodes[subnode_index] = subnode;
             node.nodes.push(subnode);
         }
     }
@@ -54,11 +57,41 @@ fn create_node(numbers: &Vec<usize>, start: usize) -> (Node, usize) {
     // Read metadata
     if metadata_fields > 0 {
         for data_index in 0..metadata_fields {
-            // node.metadata[data_index] = numbers[offset + data_index];
             node.metadata.push(numbers[offset + data_index]);
         }
         offset += metadata_fields;
     }
 
     (node, offset)
+}
+
+fn sum_metadata(root: &Node) -> usize {
+    let mut sum = root.metadata.iter().sum();
+
+    for subnode in root.nodes.iter() {
+        sum += sum_metadata(subnode);
+    }
+
+    sum
+}
+
+fn sum_value_of_node(root: &Node) -> usize {
+    if root.nodes.len() == 0 {
+        return root.metadata.iter().sum();
+    }
+
+    let mut sum = 0;
+
+    for subnode_ref in &root.metadata {
+        if *subnode_ref == 0 {
+            continue;
+        }
+        // does it not exist
+        if *subnode_ref > root.nodes.len() {
+            continue;
+        }
+        sum += sum_value_of_node(&root.nodes[subnode_ref - 1]);
+    }
+
+    sum
 }
