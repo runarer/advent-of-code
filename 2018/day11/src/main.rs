@@ -23,19 +23,11 @@ impl FuelCellGrid {
                 power_level -= 5;
 
                 grid[(y - 1) * GRID_SIZE + (x - 1)] = power_level as i32;
-<<<<<<< HEAD
-=======
-                // println!("{} {}", (y - 1) * GRID_SIZE + (x - 1), power_level);
->>>>>>> d68ad151a039809fd2cc714beb27a7aa87222db9
             }
         }
 
         Self { grid }
     }
-
-    // pub fn at(&self, x: usize, y: usize) -> i32 {
-    //     self.grid[(y - 1) * GRID_SIZE + (x - 1)]
-    // }
 
     pub fn square_value(&self, x: usize, y: usize, size: usize) -> i32 {
         let mut sum = 0;
