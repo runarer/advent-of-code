@@ -23,6 +23,10 @@ impl FuelCellGrid {
                 power_level -= 5;
 
                 grid[(y - 1) * GRID_SIZE + (x - 1)] = power_level as i32;
+<<<<<<< HEAD
+=======
+                // println!("{} {}", (y - 1) * GRID_SIZE + (x - 1), power_level);
+>>>>>>> d68ad151a039809fd2cc714beb27a7aa87222db9
             }
         }
 
