@@ -46,6 +46,10 @@ fn main() -> io::Result<()> {
     let sum = grow_plants(&pots, &rules, generations);
     println!("Part 1: {}", sum);
 
+    let generations = 50_000_000_000;
+    let sum = grow_plants_efficently(&pots, &rules, generations);
+    println!("Part 2: {}", sum);
+
     Ok(())
 }
 
@@ -72,6 +76,7 @@ fn add_pots(pots: &mut Vec<bool>, first_pot_index: &mut isize) {
 //     println!();
 // }
 
+// Dette er den naive løsningen.
 fn grow_plants(initial_pots: &Vec<bool>, rules: &[bool; 32], generations: usize) -> isize {
     let mut pots = initial_pots.clone();
     let mut first_pot_index = 0;
@@ -97,6 +102,63 @@ fn grow_plants(initial_pots: &Vec<bool>, rules: &[bool; 32], generations: usize)
     }
 
     let mut index = first_pot_index;
+    let mut sum = 0;
+    for pot in pots {
+        if pot {
+            sum += index;
+        }
+        index += 1;
+    }
+    sum
+}
+
+// Etter å ha studert outputen så er det klart at
+// etter noen generasjoner så forblir mønstre det samme, men
+// flytter seg et steg til høyre.
+//
+// Kan legge inn en sjekk for når dette oppstår
+// og fra den generasjonen regne ut endlige posisjoner.
+fn grow_plants_efficently(
+    initial_pots: &Vec<bool>,
+    rules: &[bool; 32],
+    generations: usize,
+) -> isize {
+    let mut pots = initial_pots.clone();
+    let mut first_pot_index = 0;
+    let mut generations_left = generations;
+
+    for generation in 0..generations {
+        add_pots(&mut pots, &mut first_pot_index);
+        let mut new_pots = vec![false; pots.len()];
+
+        for pot in 2..pots.len() - 2 {
+            let mut rule_index = 0;
+            for j in 0..5 {
+                if pots[pot + j - 2] {
+                    rule_index |= 1 << (4 - j);
+                }
+            }
+
+            if rules[rule_index] {
+                new_pots[pot] = true;
+            }
+        }
+
+        let mut repeat_found = true;
+        for (i, p) in pots.iter().take(pots.len() - 1).enumerate() {
+            if new_pots[i + 1] != *p {
+                repeat_found = false;
+            }
+        }
+
+        pots = new_pots;
+        if repeat_found {
+            generations_left = generations - generation - 1;
+            break;
+        }
+    }
+
+    let mut index = first_pot_index + generations_left as isize;
     let mut sum = 0;
     for pot in pots {
         if pot {
