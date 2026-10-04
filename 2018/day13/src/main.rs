@@ -162,6 +162,9 @@ fn main() -> io::Result<()> {
         first_crash_position.0, first_crash_position.1
     );
 
+    let last_cart = run_untill_last_cart(&tracks, &carts);
+    println!("Part 2: {},{}", last_cart.0, last_cart.1);
+
     // print_tracks(&tracks);
     // println!();
     // print_carts(&carts);
@@ -187,6 +190,55 @@ fn run_untill_first_crash(tracks: &Vec<Vec<TrackType>>, carts: &Vec<Cart>) -> (u
                     return carts[i].position;
                 }
             }
+        }
+    }
+}
+
+fn run_untill_last_cart(tracks: &Vec<Vec<TrackType>>, carts: &Vec<Cart>) -> (usize, usize) {
+    let mut carts: Vec<(Cart, bool)> = carts.iter().map(|cart| (cart.clone(), false)).collect();
+    loop {
+        // create move order
+        carts.sort_by_key(|item| (item.0.position.1, item.0.position.0));
+        // reset moves
+        carts.iter_mut().for_each(|cart| cart.1 = false);
+
+        // Move carts
+        let mut i: isize = 0;
+        loop {
+            // Are all moved?
+            if carts.iter().all(|cart| cart.1) {
+                break;
+            }
+
+            // current cart and if it has moved
+            let cart = &mut carts[i as usize];
+            if cart.1 {
+                i += 1;
+                continue;
+            }
+
+            // Move cart
+            cart.0.move_forward();
+            let track_type = &tracks[cart.0.position.1][cart.0.position.0];
+            cart.0.turn(track_type);
+            cart.1 = true;
+
+            // check for collitions, remove both and reset i.
+            let mut j: isize = 0;
+            while j < carts.len() as isize {
+                if i != j && carts[i as usize].0.position == carts[j as usize].0.position {
+                    carts.remove(j.max(i) as usize);
+                    carts.remove(i.min(j) as usize);
+                    i = 0;
+                    break;
+                }
+                j += 1;
+            }
+        }
+
+        // Are we done? One cart left.
+        if carts.len() == 1 {
+            return carts[0].0.position;
         }
     }
 }
