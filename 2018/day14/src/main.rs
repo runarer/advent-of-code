@@ -12,19 +12,9 @@ fn main() -> io::Result<()> {
     let recipies = content.lines().next().unwrap().parse::<usize>().unwrap();
 
     let next_ten_numbers = next_ten(recipies);
-    // let next_ten_numbers = next_ten(9);
     println!("Part 1: {next_ten_numbers}");
-    // let next_ten_numbers = next_ten(5);
-    // println!("Part 1: {next_ten_numbers}");
-
-    // let next_ten_numbers = next_ten(18);
-    // println!("Part 1: {next_ten_numbers}");
-
-    // let next_ten_numbers = next_ten(2018);
-    // println!("Part 1: {next_ten_numbers}");
 
     let recipies_before_number = recipies_before(recipies);
-    // let recipies_before_number = recipies_before(51589);
     println!("Part 2: {recipies_before_number}");
 
     Ok(())
