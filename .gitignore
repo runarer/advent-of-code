@@ -362,8 +362,23 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# Rust eframe/egui
+# Mac stuff:
+.DS_Store
+
+# trunk output folder
+dist
+
+# Rust compile target directories:
+target
+target_ra
+target_wasm
+
+# https://github.com/lycheeverse/lychee
+.lycheecache
+
+#Egen
 input
 2023/21/allsteps.txt
 2023/21/output.txt
 2023/25/wires.txt
-target/
